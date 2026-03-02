@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# OpenClaw
+.specstory/
+.env
+
+# Dependencies
+config/tech_terms.txt
+
+# Build
+*.egg-info/
+dist/
+build/
+
+# Documentation (keep only essential)
+ADD_TO_CLAWHUB.md
+PUBLISHING_TO_CLAWHUB.md
+PUBLISHING_CHECKLIST.md
+FINAL_CHECK_REPORT.md
+CHECK_REPORT.md
+PACKAGE_README.md
+GIT_DIRECTORY_EXPLAINED.md
+LICENSE_ISSUE.md
+LICENSE_RESOLVED.md
+LICENSE_FIX_COMPLETE.md
+submit_to_clawhub.sh
+publish.sh
+
+# Other skills
+memori_enhanced/
+memori_integration/
+memori_real/
+memori_zhipu/
