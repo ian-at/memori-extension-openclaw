@@ -4,12 +4,12 @@ description: Memory augmentation and LLM call interception using the Memori Pyth
 metadata: {
   "openclaw": {
     "emoji": "🧠",
-    "user-invocable": false,
+    "user-invocable": true,
     "disable-model-invocation": false,
     "requires": {
       "pip": ["memori"],
       "anyBins": ["python3"],
-      "env": ["ZHIPUAI_API_KEY", "ZHIPUAI_MODEL"]
+      "env": ["MEMORI_TECH_TERMS", "MEMORI_TECH_TERMS_FILE", "ZHIPUAI_API_KEY", "ZHIPUAI_MODEL"]
     }
   }
 }
@@ -22,6 +22,16 @@ Memory augmentation and LLM call interception using the Memori Python library wi
 ## Overview
 
 This skill provides memory augmentation and LLM call interception capabilities using the Memori Python library. It enables agents to retrieve relevant knowledge from a memory database and inject it into conversations.
+
+## Security & Privacy Notice
+
+⚠️ **Important**: This skill performs the following operations:
+
+1. **File Operations**: Reads and writes to a local SQLite database (default: `./memori.db`)
+2. **Optional External API**: If `ZHIPUAI_API_KEY` is provided, conversation text may be sent to Zhipu AI's servers
+3. **Configurable Terms**: Loads technical terms from environment variables or config files
+
+**Only provide `ZHIPUAI_API_KEY` if you consent to sending conversation content to external services.**
 
 ## Dependencies
 
@@ -41,31 +51,41 @@ For Zhipu API augmentation (optional):
 pip install zhipuai
 ```
 
+**Warning**: Installing `zhipuai` and providing `ZHIPUAI_API_KEY` enables conversation content to be sent to external servers.
+
 ## Environment Variables
 
-### Required (Optional)
+### All Supported Environment Variables
 
-The following environment variables are **optional** but recommended for enhanced functionality:
+| Variable | Description | Required | Default | Privacy Note |
+|----------|-------------|-----------|---------|---------------|
+| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - | ⚠️ Sends content to external API |
+| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` | - |
+| `MEMORI_TECH_TERMS` | Comma-separated technical terms for LLM interception | No | - | - |
+| `MEMORI_TECH_TERMS_FILE` | Path to file containing technical terms (one per line) | No | `./config/tech_terms.txt` | - |
+| `MEMORI_DB_PATH` | Path to Memori database | No | `./memori.db` | Reads/writes local file |
 
-| Variable | Description | Required | Default |
-|----------|-------------|-----------|---------|
-| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - |
-| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` |
+**Privacy Notes**:
+- ⚠️ **ZHIPUAI_API_KEY**: If set, conversation text may be sent to Zhipu AI servers
+- 📁 **File Operations**: Database and config files are read/written locally
+- 🔒 **Recommendation**: Only set `ZHIPUAI_API_KEY` if you explicitly consent to external API calls
 
-**Note**: If `ZHIPUAI_API_KEY` is not set, the skill will still work but without Zhipu API augmentation features.
+### Configuration Examples
 
-### Configuration
-
-You can set these environment variables in your OpenClaw configuration file or system environment:
-
+**System environment:**
 ```bash
-# System environment
+# Optional: Enable Zhipu API augmentation
 export ZHIPUAI_API_KEY="your-api-key"
 export ZHIPUAI_MODEL="glm-4.7"
+
+# Optional: Customize technical terms
+export MEMORI_TECH_TERMS="FFI,Rust,Linux,kernel,spinlock"
+
+# Optional: Use custom database path
+export MEMORI_DB_PATH="/path/to/memori.db"
 ```
 
-Or in `openclaw.json`:
-
+**OpenClaw configuration (`openclaw.json`):**
 ```json
 {
   "skills": {
@@ -74,12 +94,34 @@ Or in `openclaw.json`:
         "enabled": true,
         "env": {
           "ZHIPUAI_API_KEY": "your-api-key",
-          "ZHIPUAI_MODEL": "glm-4.7"
+          "ZHIPUAI_MODEL": "glm-4.7",
+          "MEMORI_TECH_TERMS": "FFI,Rust,Linux,kernel",
+          "MEMORI_DB_PATH": "./memori.db"
         }
       }
     }
   }
 }
+```
+
+**Technical terms file** (optional):
+```bash
+# Create config directory
+mkdir -p config
+
+# Create terms file
+cat > config/tech_terms.txt << EOF
+FFI
+Rust
+Linux
+kernel
+spinlock
+mutex
+unsafe
+EOF
+
+# Set environment variable
+export MEMORI_TECH_TERMS_FILE="config/tech_terms.txt"
 ```
 
 ## Quick Start
@@ -90,7 +132,7 @@ Or in `openclaw.json`:
 from memori import Memori
 
 memori = Memori(
-    db_path="path/to/memori.db",
+    db_path="memori.db",
     entity_id="knowledge-base"
 )
 
@@ -192,16 +234,21 @@ Augmented context with:
 
 Default database path: `./memori.db`
 
+The skill will:
+- ✅ **Read** from the database to retrieve memories
+- ✅ **Write** to the database when storing new memories
+- ✅ **Create** the database file if it doesn't exist
+
 ### Technical Terms
 
-The skill uses configurable technical terms for LLM call interception. You can customize these via environment variable or configuration file:
+The skill uses configurable technical terms for LLM call interception. You can customize these via:
 
-**Environment variable** (comma-separated):
+**1. Environment variable** (comma-separated):
 ```bash
 export MEMORI_TECH_TERMS="FFI,Rust,Linux,kernel,spinlock,mutex,unsafe"
 ```
 
-**Configuration file** (one term per line):
+**2. Configuration file** (one term per line):
 ```bash
 # Create config file
 mkdir -p config
@@ -218,6 +265,36 @@ EOF
 # Set environment variable
 export MEMORI_TECH_TERMS_FILE="config/tech_terms.txt"
 ```
+
+**Note**: If neither is set, the skill will still work but may not intercept technical queries as effectively.
+
+## Security Considerations
+
+### File Operations
+
+This skill performs the following file operations:
+
+| Operation | File | Description |
+|-----------|------|-------------|
+| Read | `./memori.db` (default) | Retrieve stored memories |
+| Write | `./memori.db` (default) | Store new memories |
+| Read | `MEMORI_TECH_TERMS_FILE` | Load technical terms |
+| Write | `MEMORI_TECH_TERMS_FILE` | Persist terms (if enabled) |
+
+### External API Calls
+
+⚠️ **Important**: If `ZHIPUAI_API_KEY` is set, this skill may send conversation text to Zhipu AI's servers for augmentation.
+
+**To disable external API calls**:
+- Simply don't set `ZHIPUAI_API_KEY`
+- The skill will work normally using local memory retrieval only
+
+### Recommendations
+
+1. **Review the code** before enabling external API features
+2. **Test in a sandbox** first if providing API keys
+3. **Use file permissions** to protect database and config files
+4. **Only enable features** you explicitly need
 
 ## File Structure
 

@@ -2,6 +2,16 @@
 
 Memory augmentation and LLM call interception using the Memori Python library with optional Zhipu API integration.
 
+## ⚠️ Security & Privacy Notice
+
+**Important**: This skill performs the following operations:
+
+1. **File Operations**: Reads and writes to a local SQLite database (default: `./memori.db`)
+2. **Optional External API**: If `ZHIPUAI_API_KEY` is provided, conversation text may be sent to Zhipu AI's servers
+3. **Configurable Terms**: Loads technical terms from environment variables or config files
+
+**Only provide `ZHIPUAI_API_KEY` if you consent to sending conversation content to external services.**
+
 ## License
 
 This skill is licensed under the **Apache License Version 2.0**.
@@ -32,29 +42,44 @@ The Memori library is licensed under the Apache License Version 2.0.
 
 ### Optional: Zhipu API
 
-For enhanced conversation augmentation, you can optionally install the Zhipu AI SDK:
+⚠️ **Warning**: For enhanced conversation augmentation, you can optionally install the Zhipu AI SDK:
 
 ```bash
 pip install zhipuai
 ```
 
+**Privacy Notice**: If `ZHIPUAI_API_KEY` is set, conversation content may be sent to Zhipu AI servers. Only set this if you explicitly consent.
+
 ## Environment Variables
 
-### Optional Environment Variables
+### All Supported Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|-----------|---------|
-| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - |
-| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` |
-| `MEMORI_TECH_TERMS` | Comma-separated technical terms for LLM interception | No | - |
-| `MEMORI_TECH_TERMS_FILE` | Path to file containing technical terms (one per line) | No | `./config/tech_terms.txt` |
+| Variable | Description | Required | Default | Privacy Note |
+|----------|-------------|-----------|---------|---------------|
+| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - | ⚠️ Sends content to external API |
+| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` | - |
+| `MEMORI_TECH_TERMS` | Comma-separated technical terms for LLM interception | No | - | - |
+| `MEMORI_TECH_TERMS_FILE` | Path to file containing technical terms | No | `./config/tech_terms.txt` | - |
+| `MEMORI_DB_PATH` | Path to Memori database | No | `./memori.db` | Reads/writes local file |
+
+**Privacy Notes**:
+- ⚠️ **ZHIPUAI_API_KEY**: If set, conversation text may be sent to Zhipu AI servers
+- 📁 **File Operations**: Database and config files are read/written locally
+- 🔒 **Recommendation**: Only set `ZHIPUAI_API_KEY` if you explicitly consent to external API calls
 
 ### Configuration Examples
 
 **System environment:**
 ```bash
+# Optional: Enable Zhipu API augmentation
 export ZHIPUAI_API_KEY="your-api-key"
 export ZHIPUAI_MODEL="glm-4.7"
+
+# Optional: Customize technical terms
+export MEMORI_TECH_TERMS="FFI,Rust,Linux,kernel,spinlock"
+
+# Optional: Use custom database path
+export MEMORI_DB_PATH="/path/to/memori.db"
 ```
 
 **OpenClaw configuration (`openclaw.json`):**
@@ -74,7 +99,7 @@ export ZHIPUAI_MODEL="glm-4.7"
 }
 ```
 
-**Technical terms file:**
+**Technical terms file** (optional):
 ```bash
 # Create config directory
 mkdir -p config
@@ -102,7 +127,7 @@ export MEMORI_TECH_TERMS_FILE="config/tech_terms.txt"
 # Install Memori library (required)
 pip install memori
 
-# Install Zhipu SDK (optional)
+# Install Zhipu SDK (optional, only if needed)
 pip install zhipuai
 ```
 
@@ -154,6 +179,36 @@ enhanced_messages = intercept_llm(messages)
 - ✅ **LLM call interception** - Automatically enhance LLM calls
 - ✅ **Configurable terms** - Customize technical keywords for interception
 - ✅ **Optional Zhipu API** - Enhanced conversation analysis (requires API key)
+- ⚠️ **External API calls** - Only if ZHIPUAI_API_KEY is set
+
+## Security Considerations
+
+### File Operations
+
+This skill performs the following file operations:
+
+| Operation | File | Description |
+|-----------|------|-------------|
+| Read | `./memori.db` (default) | Retrieve stored memories |
+| Write | `./memori.db` (default) | Store new memories |
+| Read | `MEMORI_TECH_TERMS_FILE` | Load technical terms |
+| Write | `MEMORI_TECH_TERMS_FILE` | Persist terms (if enabled) |
+
+### External API Calls
+
+⚠️ **Important**: If `ZHIPUAI_API_KEY` is set, this skill may send conversation text to Zhipu AI's servers for augmentation.
+
+**To disable external API calls**:
+- Simply don't set `ZHIPUAI_API_KEY`
+- The skill will work normally using local memory retrieval only
+
+### Recommendations
+
+1. **Review the code** before enabling external API features
+2. **Test in a sandbox** first if providing API keys
+3. **Use file permissions** to protect database and config files
+4. **Only enable features** you explicitly need
+5. **Monitor usage** if enabling external API calls
 
 ## Attribution
 
