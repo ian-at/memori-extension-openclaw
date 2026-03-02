@@ -1,6 +1,6 @@
 ---
-name: memori-zhipu
-description: Memory augmentation and LLM call interception using the Memori Python library.
+name: memori-extension
+description: Memory augmentation and LLM call interception using the Memori Python library with optional Zhipu API integration.
 metadata: {
   "openclaw": {
     "emoji": "🧠",
@@ -8,29 +8,79 @@ metadata: {
     "disable-model-invocation": false,
     "requires": {
       "pip": ["memori"],
-      "anyBins": ["python3"]
+      "anyBins": ["python3"],
+      "env": ["ZHIPUAI_API_KEY", "ZHIPUAI_MODEL"]
     }
   }
 }
 ---
 
-# Memori Zhipu Skill
+# Memori Extension Skill
 
-Memory augmentation and LLM call interception using the Memori Python library.
+Memory augmentation and LLM call interception using the Memori Python library with optional Zhipu API integration.
 
 ## Overview
 
-This skill provides memory augmentation and LLM call interception capabilities using the Memori Python library.
+This skill provides memory augmentation and LLM call interception capabilities using the Memori Python library. It enables agents to retrieve relevant knowledge from a memory database and inject it into conversations.
 
 ## Dependencies
 
-This skill requires the **memori** Python package:
+This skill requires the following **Python packages**:
 
 ```bash
 pip install memori
 ```
 
 The **memori** library is licensed under **Apache License Version 2.0**.
+
+### Optional Dependencies
+
+For Zhipu API augmentation (optional):
+
+```bash
+pip install zhipuai
+```
+
+## Environment Variables
+
+### Required (Optional)
+
+The following environment variables are **optional** but recommended for enhanced functionality:
+
+| Variable | Description | Required | Default |
+|----------|-------------|-----------|---------|
+| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - |
+| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` |
+
+**Note**: If `ZHIPUAI_API_KEY` is not set, the skill will still work but without Zhipu API augmentation features.
+
+### Configuration
+
+You can set these environment variables in your OpenClaw configuration file or system environment:
+
+```bash
+# System environment
+export ZHIPUAI_API_KEY="your-api-key"
+export ZHIPUAI_MODEL="glm-4.7"
+```
+
+Or in `openclaw.json`:
+
+```json
+{
+  "skills": {
+    "entries": {
+      "memori-extension": {
+        "enabled": true,
+        "env": {
+          "ZHIPUAI_API_KEY": "your-api-key",
+          "ZHIPUAI_MODEL": "glm-4.7"
+        }
+      }
+    }
+  }
+}
+```
 
 ## Quick Start
 
@@ -63,7 +113,7 @@ memori.close()
 ### Method 2: Skill Convenience API
 
 ```python
-from skills.memori_zhipu import search, augment, intercept_llm
+from skills.memori_extension import search, augment, intercept_llm
 
 # Search
 memories = search("FFI bindings", limit=5)
@@ -87,7 +137,6 @@ enhanced = intercept_llm(messages)
 Initialize Memori instance.
 
 **Parameters:**
-
 - `db_path` (str | Path, optional): Database path
 - `entity_id` (str, optional): Entity ID, default `"default"`
 
@@ -122,7 +171,6 @@ Close database connection.
 ### Memory Class
 
 Memory object with attributes:
-
 - `id` (int): Memory ID
 - `entity_id` (str): Entity ID
 - `content` (str): Memory content
@@ -132,7 +180,6 @@ Memory object with attributes:
 ### AugmentedContext Class
 
 Augmented context with:
-
 - `original_query` (str): Original query
 - `retrieved_memories` (List[Memory]): Retrieved memories
 - `enhanced_prompt` (str): Augmented prompt
@@ -145,21 +192,39 @@ Augmented context with:
 
 Default database path: `./memori.db`
 
-### Zhipu API (Optional)
+### Technical Terms
 
-If using Zhipu API for augmentation:
+The skill uses configurable technical terms for LLM call interception. You can customize these via environment variable or configuration file:
 
+**Environment variable** (comma-separated):
 ```bash
-pip install zhipuai
-export ZHIPUAI_API_KEY="your-api-key"
+export MEMORI_TECH_TERMS="FFI,Rust,Linux,kernel,spinlock,mutex,unsafe"
+```
+
+**Configuration file** (one term per line):
+```bash
+# Create config file
+mkdir -p config
+cat > config/tech_terms.txt << EOF
+FFI
+Rust
+Linux
+kernel
+spinlock
+mutex
+unsafe
+EOF
+
+# Set environment variable
+export MEMORI_TECH_TERMS_FILE="config/tech_terms.txt"
 ```
 
 ## File Structure
 
 ```
-skills/memori_zhipu/
+skills/memori_extension/
 ├── __init__.py               # Skill entry
-├── memori_zhipu.py           # Skill implementation
+├── memori_extension.py       # Skill implementation
 ├── SKILL.md                  # This file
 └── README.md                 # Quick start guide
 ```
@@ -173,7 +238,7 @@ This skill uses the **memori** Python library, which is also licensed under **Ap
 ## Attribution
 
 This skill incorporates the Memori Python library, which is licensed under the **Apache License 2.0**.
-See the [LICENSE](LICENSE) file for the complete license text.
+See the [LICENSE](http://www.apache.org/licenses/LICENSE-2.0) file for the complete license text.
 
 Memori Library:
 

@@ -1,6 +1,6 @@
-# Memori Zhipu Skill
+# Memori Extension Skill
 
-Memory augmentation and LLM call interception using the Memori Python library.
+Memory augmentation and LLM call interception using the Memori Python library with optional Zhipu API integration.
 
 ## License
 
@@ -22,17 +22,91 @@ limitations under the License.
 
 ## Dependencies
 
-This skill requires the Memori Python library:
+This skill requires the **Memori Python library**:
 
 ```bash
 pip install memori
 ```
 
 The Memori library is licensed under the Apache License Version 2.0.
-- Copyright 2025 Memori Team
-- Repository: https://github.com/MemoriLabs/Memori
+
+### Optional: Zhipu API
+
+For enhanced conversation augmentation, you can optionally install the Zhipu AI SDK:
+
+```bash
+pip install zhipuai
+```
+
+## Environment Variables
+
+### Optional Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|-----------|---------|
+| `ZHIPUAI_API_KEY` | Zhipu AI API key for conversation augmentation | No | - |
+| `ZHIPUAI_MODEL` | Zhipu AI model name | No | `glm-4.7` |
+| `MEMORI_TECH_TERMS` | Comma-separated technical terms for LLM interception | No | - |
+| `MEMORI_TECH_TERMS_FILE` | Path to file containing technical terms (one per line) | No | `./config/tech_terms.txt` |
+
+### Configuration Examples
+
+**System environment:**
+```bash
+export ZHIPUAI_API_KEY="your-api-key"
+export ZHIPUAI_MODEL="glm-4.7"
+```
+
+**OpenClaw configuration (`openclaw.json`):**
+```json
+{
+  "skills": {
+    "entries": {
+      "memori-extension": {
+        "enabled": true,
+        "env": {
+          "ZHIPUAI_API_KEY": "your-api-key",
+          "ZHIPUAI_MODEL": "glm-4.7"
+        }
+      }
+    }
+  }
+}
+```
+
+**Technical terms file:**
+```bash
+# Create config directory
+mkdir -p config
+
+# Create terms file
+cat > config/tech_terms.txt << EOF
+FFI
+Rust
+Linux
+kernel
+spinlock
+mutex
+unsafe
+EOF
+
+# Set environment variable
+export MEMORI_TECH_TERMS_FILE="config/tech_terms.txt"
+```
 
 ## Quick Start
+
+### Installation
+
+```bash
+# Install Memori library (required)
+pip install memori
+
+# Install Zhipu SDK (optional)
+pip install zhipuai
+```
+
+### Basic Usage
 
 ```python
 from memori import Memori
@@ -55,42 +129,39 @@ memory_id = memori.store("New content")
 memori.close()
 ```
 
-## Usage
-
-### Direct Library Usage
+### Using the Skill API
 
 ```python
-from memori import Memori
+from skills.memori_extension import search, augment, intercept_llm
 
-memori = Memori(db_path="memori.db", entity_id="knowledge")
-memories = memori.search("FFI bindings", limit=5)
-memori.close()
-```
-
-### Skill API
-
-```python
-from skills.memori_zhipu import search, augment, intercept_llm
-
-# Search
+# Search memories
 memories = search("query", limit=5)
 
-# Augment
+# Augment query
 enhanced = augment("query")
+if enhanced:
+    print(enhanced)
 
-# Intercept LLM
+# Intercept LLM calls
 messages = [{"role": "user", "content": "question"}]
-enhanced = intercept_llm(messages)
+enhanced_messages = intercept_llm(messages)
 ```
+
+## Features
+
+- ✅ **Memory retrieval** - Search knowledge database by keywords
+- ✅ **Query augmentation** - Inject retrieved memories into conversation
+- ✅ **LLM call interception** - Automatically enhance LLM calls
+- ✅ **Configurable terms** - Customize technical keywords for interception
+- ✅ **Optional Zhipu API** - Enhanced conversation analysis (requires API key)
 
 ## Attribution
 
 This skill incorporates the Memori Python library, which is licensed under the Apache License Version 2.0.
 
-Memori Library:
+**Memori Library:**
 - Copyright 2025 Memori Team
 - License: Apache License 2.0
 - Repository: https://github.com/MemoriLabs/Memori
 
-For the complete license text, see:
-http://www.apache.org/licenses/LICENSE-2.0
+**Full license text:** http://www.apache.org/licenses/LICENSE-2.0
