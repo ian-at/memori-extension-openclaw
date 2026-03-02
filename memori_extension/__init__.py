@@ -3,7 +3,7 @@ Memori + Zhipu API - OpenClaw Skill Integration
 
 Provides simplified API for OpenClaw integration using the Memori Python library.
 """
-from .memori import (
+from .memori_extension import (
     get_memori,
     get_interceptor,
     get_zhipu_client,

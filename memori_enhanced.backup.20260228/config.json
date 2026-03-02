@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "autoTrigger": true,
+  "settings": {
+    "maxResults": 3,
+    "minConfidence": 0.5,
+    "cacheEnabled": true,
+    "cacheTTL": 300
+  }
+}
